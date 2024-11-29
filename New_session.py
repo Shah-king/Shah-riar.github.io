@@ -1,5 +1,5 @@
 import requests
-
+from requests.exceptions import RequestException
 def start_session():
     url = "https://hackdiversity.xyz/api/start-session"
     payload = {
@@ -19,9 +19,22 @@ def start_session():
         print("Request timed out.")
     except Exception as e:
         print(f"Error occurred: {e}")
-
 # Start session and retrieve the session ID
 session_id = start_session()
+
+'''Fetch data from API with retry logic for better error case handling'''
+def fetch_data_with_retries(url, headers, retries=3):
+    for attempt in range(retries):
+        try:
+            response = requests.get(url, headers=headers, timeout=10)
+            if response.status_code == 200:
+                return response.json()
+            else:
+                print(f"Attempt {attempt + 1} failed with status code: {response.status_code}")
+        except RequestException as e:
+            print(f"Attempt {attempt + 1} failed with error: {e}")
+    
+    raise Exception("Failed to fetch data after multiple attempts")
 
 def get_route(session_id):
     url = "https://hackdiversity.xyz/api/navigation/routes"
